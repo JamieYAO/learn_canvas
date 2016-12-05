@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+</head>
+<body>
+    <canvas id="myCanvas" width="1000" height="1000">您的浏览器不支持此标签</canvas>
+    <script type="text/javascript">
+ 
+        setInterval('drawClock(150, 150, 100, 50, 70, 90,"pink","black","red","green")', 1000);
+ 
+        //画钟表
+        //[ox]圆心X坐标[oy]圆心Y坐标[or]钟表半径[hr]时针半径[mr]分针半径[sr]秒针半径[oc]钟表外环颜色[hc]时针颜色[mc]分针颜色[sc]秒针颜色
+        function drawClock(ox, oy, or, hr, mr, sr, oc, hc, mc, sc) {
+ 
+            //时钟底盘
+            var canvas = document.getElementById('myCanvas');
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(ox - or, oy - or, or * 2, or * 2);//清空上一次绘制
+            ctx.beginPath();
+            ctx.arc(ox, oy, or, 0, 2 * Math.PI, false);
+            ctx.strokeStyle = oc;
+            ctx.stroke();
+            ctx.closePath();
+ 
+            //获取当前时间
+            var NowTime = new Date();
+            var h = NowTime.getHours();
+            var m = NowTime.getMinutes();
+            var s = NowTime.getSeconds();
+            var y = NowTime.getFullYear();
+            var mo = NowTime.getMonth() + 1;
+            var d = NowTime.getDate();
+            ctx.fillText(mo + '月' + d + '日', ox, oy - or / 2, 50);//显示月日
+ 
+            //打上时间刻度
+            for (var i = 0; i < 12; i++) {
+                var textXY = angle(30, i + 1, ox, oy, or - 10);//小时刻度坐标
+                ctx.fillText(i + 1, textXY.split('_')[0], textXY.split('_')[1]);
+                ctx.textAlign = 'center';//水平居中
+                ctx.textBaseline = 'middle';//垂直居中
+            }
+ 
+            //打上分钟刻度
+            for (var i = 0; i < 60; i++) {
+                var oXY = angle(6, i + 1, ox, oy, or);//分、秒刻度坐标
+                ctx.beginPath();
+                ctx.arc(oXY.split('_')[0], oXY.split('_')[1], (i + 1) % 5 == 0 ? 2 : 1, 0, 2 * Math.PI);
+                ctx.fillStyle = 'blue';
+                ctx.fill();
+                ctx.closePath();
+            }
+ 
+            h = h + m / 60;//分钟影响时针偏移
+ 
+            var hoursXY = angle(30, h > 12 ? h - 12 : h, ox, oy, hr);//时针终点XY坐标
+            drawLine(ctx, hc, ox, oy, hoursXY.split('_')[0], hoursXY.split('_')[1]);
+ 
+            m = m + s / 60;//秒钟影响分针偏移
+ 
+            var minuteXY = angle(6, m, ox, oy, mr);//分针终点XY坐标
+            drawLine(ctx, mc, ox, oy, minuteXY.split('_')[0], minuteXY.split('_')[1]);
+ 
+            var secondXY = angle(6, s, ox, oy, sr);//秒针终点XY坐标
+            drawLine(ctx, sc, ox, oy, secondXY.split('_')[0], secondXY.split('_')[1]);
+ 
+        }
+ 
+        //计算圆上每个点的坐标
+        ///[a]角度[i]刻度[ox]圆心X坐标[oy]圆心Y坐标[or]圆半径
+        function angle(a, i, ox, oy, or) {
+            var hudu = (2 * Math.PI / 360) * a * i;//求出弧度
+            var x = ox + Math.sin(hudu) * or;//计算出x轴坐标for正弦
+            var y = oy - Math.cos(hudu) * or;//计算出y轴坐标for余弦
+            return x + '_' + y;
+        }
+ 
+        //画线方法
+        ///[ob]绘画对象[ox]圆心X坐标[oy]圆心Y坐标[px]目标X坐标[py]目标Y坐标
+        function drawLine(ob, color, ox, oy, px, py) {
+            ob.beginPath();
+            ob.strokeStyle = color;
+            ob.moveTo(ox, oy);
+            ob.lineTo(px, py);
+            ob.stroke();
+            ob.closePath();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<html>
+	<body>
+		<canvas id="canvas" width='500' height="500" style="background: withe"> 
+		   <p>you browser not support canvas!<p> 
+		</canvas> 
+		<script src='./js/sprite.js'></script> 
+		<script> 
+		   window.onload = function(){ 
+			var canvas = document.getElementById('canvas'); 
+			var context = canvas.getContext('2d');
+			var cw = canvas.width;
+			var ch = canvas.height;
+
+			var CLOCK_RAIDIUS = cw/2;
+			var HOUR_HAND_TRUNCATION = 35;
+
+			var ballPainter = {
+				paint: function (sprite, context) {
+					var x = sprite.left;
+					var y = sprite.top;
+					var width = sprite.width;
+					var height = sprite.height;
+					var radius = sprite.width/2;
+
+					context.save();
+					context.beginPath();
+					context.arc(x, y,radius, 0, Math.PI*2, false);
+					context.clip();
+
+					context.shadowColor = 'rgb(0, 0, 0';
+					context.shadowOffsetX = -4;
+					context.shadowOffsetY = -4;
+					context.shadowBlue = 8;
+
+					context.lineWidth = 2;
+					context.strokeStyle = 'rgb(100, 100, 195)';
+					context.fillStyle ='rgba(30, 144, 255, 0.155)';
+					context.fill();
+					context.stroke();
+					context.restore();
+				}
+			}
+
+			var ball = new Sprite('ball', ballPainter);
+			
+			function drawGrid(color, stepx, stepy) {
+				context.strokeStyle = color;
+				context.lineWidth = 0.5;
+			
+				for (var i = stepx + 0.5; i< context.canvas.width; i += stepx) {
+					context.beginPath();
+					context.moveTo(i, 0);
+					context.lineTo(i, context.canvas.height);
+					context.stroke();
+				}
+
+				for (var i = stepy+ 0.5; i< context.canvas.height; i += stepy) {
+					context.beginPath();
+					context.moveTo(0, i);
+					context.lineTo(context.canvas.width, i);
+					context.stroke();
+				}
+			}
+
+			function angle(a, i, ox, oy, or) {
+				var position = {};
+				var hudu = (2 * Math.PI / 360) * a * i;//求出弧度
+				position.x = ox + Math.sin(hudu) * or;//计算出x轴坐标for正弦
+				position.y = oy - Math.cos(hudu) * or;//计算出y轴坐标for余弦
+				return position;
+			}
+
+			function drawHand(loc, isHour) {
+				var position;
+				if (isHour) {
+					position = angle(30, loc, cw/2, ch/2, CLOCK_RAIDIUS - ball.width/2);
+				} else {
+					position = angle(6, loc, cw/2, ch/2, CLOCK_RAIDIUS - ball.width/2);
+				}
+
+				context.beginPath();
+				context.moveTo(cw/2, ch/2);
+				context.lineTo(position.x, position.y);
+				context.stroke();
+
+				ball.left = position.x;
+				ball.top = position.y;
+				ball.paint(context);
+			}
+
+			function drawClock() {
+				drawClockFace();
+				drawHands();
+			}
+
+			function drawHands() {
+				var date = new Date(),
+				    hour = date.getHours();
+
+				ball.width = 20;
+				ball.height = 20;
+				drawHand(date.getSeconds(), false);
+
+				ball.width = 35;
+				ball.height = 35;
+				drawHand(date.getMinutes(), false);
+
+				hour = hour > 12 ? hour - 12 : hour;
+				ball.width = 50;
+				ball.height = 50;
+				drawHand(date.getHours(), true);
+				
+				ball.width = 10;
+				ball.height = 10;
+				ball.left = cw/2;
+				ball.top = ch/2;
+				ballPainter.paint(ball, context);
+			}
+
+			function drawClockFace() {
+				context.beginPath();
+				context.arc(cw/2, ch/2,
+						CLOCK_RAIDIUS, 0, Math.PI*2, false);
+				context.stroke();
+			}
+
+			(function animate() {
+				window.requestAnimationFrame(animate);
+				context.clearRect(0, 0, canvas.width, canvas.height);
+
+//				drawGrid('lightgray', 10, 10);
+				drawClock();
+			}())
+
+		    }
+		</script>
+	</body>
+</html>
